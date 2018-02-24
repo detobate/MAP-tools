@@ -3,7 +3,7 @@ import ipaddress
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Generate MAP rules for DHCPv6 (RFC7598)')
+parser = argparse.ArgumentParser(description='Generate MAP rules in hex for DHCPv6 (RFC7598)')
 parser.add_argument('-t', action='store_true', help='Build rules for MAP-T (RFC7599)')
 parser.add_argument('-e', action='store_true', help='Build rules for MAP-E (RFC7597)')
 parser.add_argument('-d', dest='dmr', metavar='<v6/len>', help='DMR IPv6 prefix and size. eg. 2001:db8:cafe::/64')
@@ -15,8 +15,20 @@ parser.add_argument('-bp', dest='bp', metavar='<psid_offset>', help='BMR PSID Of
 args = parser.parse_args()
 
 
-if args.t and args.e:
-    print("Error: Use either -t or -e")
+def get_length(field, z=4):
+    """ Calculate number of bytes by halving the length of nibbles(4bits)
+        Zero pad the total to 4 by default"""
+    try:
+        length = format(int(len(field) / 2), 'x').zfill(z)
+    except:
+        print('Error: Couldn\'t parse length of %s' % field)
+        exit(1)
+
+    return str(length)
+
+
+if (args.t and args.e) or (not args.t and not args.e):
+    print('Error: Use either -t or -e')
     exit(1)
 
 if args.t:
@@ -47,8 +59,8 @@ if args.bmr4 and args.bmr6 and args.be and args.bp:
         exit(1)
 
     rule_v4 = ''
-    for z in bmr_v4.network_address.exploded.split('.'):
-        rule_v4 = rule_v4 + format(int(z), 'x').zfill(2)
+    for octet in bmr_v4.network_address.exploded.split('.'):
+        rule_v4 = rule_v4 + format(int(octet), 'x').zfill(2)
     rule_v4_len = format(bmr_v4.prefixlen, 'x').zfill(2)
 
     rule_v6_len = bmr_v6.prefixlen
@@ -60,7 +72,7 @@ if args.bmr4 and args.bmr6 and args.be and args.bp:
     rule_v6_len = format(bmr_v6.prefixlen, 'x').zfill(2)
 
     rule = flags + ea_bits + rule_v4_len + rule_v4 + rule_v6_len + rule_v6 + port_params
-    rule = rule_cont + format(int(len(rule)/2), 'x').zfill(4) + rule
+    rule = rule_cont + get_length(rule) + rule
     rules.append(rule)
 
 
@@ -81,9 +93,9 @@ if args.dmr:
     rule_v6 = rule_v6[:mask]
 
     rule = format(rule_v6_len, 'x').zfill(2) + str(rule_v6)
-    rule = rule_cont + format(int(len(rule)/2), 'x').zfill(4) + rule
+    rule = rule_cont + get_length(rule) + rule
 
     rules.append(rule)
 
-compiled = container + format(int(len(''.join(rules))/2), 'x').zfill(4) + ''.join(rules)
+compiled = container + get_length(''.join(rules)) + ''.join(rules)
 print(compiled)
