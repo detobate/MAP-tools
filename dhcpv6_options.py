@@ -27,18 +27,7 @@ def get_length(field, z=4):
     return str(length)
 
 
-if (args.t and args.e) or (not args.t and not args.e):
-    print('Error: Use either -t or -e')
-    exit(1)
-
-if args.t:
-    container = format(95, 'x').zfill(4)
-elif args.e:
-    container = format(94, 'x').zfill(4)
-
-rules = []
-
-if args.bmr4 and args.bmr6 and args.be and args.bp:
+def build_bmr(args):
     # Basic Mapping Rule
     rule_cont = format(89, 'x').zfill(4)
     flags = format(0, 'x').zfill(2)
@@ -73,10 +62,10 @@ if args.bmr4 and args.bmr6 and args.be and args.bp:
 
     rule = flags + ea_bits + rule_v4_len + rule_v4 + rule_v6_len + rule_v6 + port_params
     rule = rule_cont + get_length(rule) + rule
-    rules.append(rule)
+    return(rule)
 
 
-if args.dmr:
+def build_dmr(args):
     rule_cont = format(91, 'x').zfill(4)
     try:
         v6 = ipaddress.ip_network(args.dmr, strict=False)
@@ -95,7 +84,31 @@ if args.dmr:
     rule = format(rule_v6_len, 'x').zfill(2) + str(rule_v6)
     rule = rule_cont + get_length(rule) + rule
 
-    rules.append(rule)
+    return(rule)
 
-compiled = container + get_length(''.join(rules)) + ''.join(rules)
-print(compiled)
+
+def main():
+
+    if (args.t and args.e) or (not args.t and not args.e):
+        print('Error: Use either -t or -e')
+        exit(1)
+
+    # Setup outer container type
+    if args.t:
+        container = format(95, 'x').zfill(4)
+    elif args.e:
+        container = format(94, 'x').zfill(4)
+
+
+    rules = []
+    if args.dmr:
+        rules.append(build_dmr(args))
+    if args.bmr4 and args.bmr6 and args.be and args.bp:
+        rules.append(build_bmr(args))
+
+    compiled = container + get_length(''.join(rules)) + ''.join(rules)
+    print(compiled)
+
+
+if __name__ == '__main__':
+    main()
