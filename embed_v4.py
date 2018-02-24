@@ -102,6 +102,7 @@ def main():
 
 
 def hex_encode(value, z=2):
+    """ Hex encode and zero pad"""
     try:
         h = format(int(value), 'x').zfill(z)
     except:

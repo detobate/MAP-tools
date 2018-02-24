@@ -3,7 +3,7 @@ import ipaddress
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Generate MAP rules in hex for DHCPv6 (RFC7598)')
+parser = argparse.ArgumentParser(description='Generate hex-encoded DHCPv6 Options for MAP-T/E based on RFC7598')
 parser.add_argument('-t', action='store_true', help='Build rules for MAP-T (RFC7599)')
 parser.add_argument('-e', action='store_true', help='Build rules for MAP-E (RFC7597)')
 parser.add_argument('-d', dest='dmr', metavar='<v6/len>', help='Default Mapping Rule IPv6 prefix and size')
@@ -57,7 +57,7 @@ def build_rule(v4, v6, ea, offset=0, FMR=False):
         v4 = ipaddress.ip_network(v4)
         v6 = ipaddress.ip_network(v6)
     except:
-        print('Error: Please provide valid v4 and v6 prefixes: %s, %s' % (v4, v6))
+        print('Error: Invalid v4 and/or v6 prefix: %s, %s' % (v4, v6))
         exit(1)
 
     rule_v4 = ''
@@ -103,7 +103,8 @@ def build_dmr(args):
 def main():
 
     if (args.t and args.e) or (not args.t and not args.e):
-        print('Error: Use either -t or -e')
+        print('\nError: Must provide either -t or -e\n')
+        parser.print_help()
         exit(1)
 
     # Setup outer container type
