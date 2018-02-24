@@ -83,11 +83,11 @@ else:
     exit(1)
 
 ipv6 = ''
-for nibble in mapped:
+for hextet in mapped:
     if ipv6 == '':
-        ipv6 = nibble
-    elif nibble is not None:
-        ipv6 = ipv6 + ':' + str(nibble)
+        ipv6 = hextet
+    elif hextet is not None:
+        ipv6 = ipv6 + ':' + str(hextet)
     else:
         ipv6 = ipv6 + ':' + str('0000')
 
