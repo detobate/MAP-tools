@@ -5,7 +5,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='An IPv4-embedded IPv6 address calculator')
 parser.add_argument('-6', dest='v6', metavar='<v6/length>', help='Provide the IPv6 prefix and size. eg. 2001:db8:cafe::/64')
-parser.add_argument('-4', dest='v4', metavar='<v4_address>', help='Provide the IPv4 address. eg. 192.168.1.1')
+parser.add_argument('-4', dest='v4', metavar='<v4_address>', help='Provide the IPv4 address to embed')
 arg = parser.parse_args()
 
 
