@@ -4,8 +4,8 @@ import argparse
 
 
 parser = argparse.ArgumentParser(description='Generate hex-encoded DHCPv6 Options for MAP-T/E based on RFC7598')
-parser.add_argument('-t', action='store_true', help='Build rules for MAP-T (RFC7599)')
-parser.add_argument('-e', action='store_true', help='Build rules for MAP-E (RFC7597)')
+parser.add_argument('-t', action='store_true', help='Include MAP-T (RFC7599) outer container header')
+parser.add_argument('-e', action='store_true', help='Include MAP-E (RFC7597) outer container header')
 parser.add_argument('-d', dest='dmr', metavar='<v6/len>', help='Default Mapping Rule IPv6 prefix and size')
 parser.add_argument('-b4', dest='bmr4', metavar='<v4/len>', help='Basic Mapping Rule IPv4 Prefix')
 parser.add_argument('-b6', dest='bmr6', metavar='<v6/len>', help='Basic Mapping Rule IPv6 Prefix')
@@ -14,6 +14,7 @@ parser.add_argument('-bo', dest='bmroff', metavar='<psid_offset>', help='Basic M
 parser.add_argument('-f4', dest='fmr4', metavar='<v4/len>', help='Forward Mapping Rule IPv4 Prefix')
 parser.add_argument('-f6', dest='fmr6', metavar='<v6/len>', help='Forward Mapping Rule IPv6 Prefix')
 parser.add_argument('-fe', dest='fmrea', metavar='<ea_bits>', help='Forward Mapping Rule EA bits', default=0)
+parser.add_argument('-fo', dest='fmroff', metavar='<psid_offset>', help='Forward Mapping Rule PSID Offset', default=0)
 
 
 args = parser.parse_args()
@@ -102,26 +103,27 @@ def build_dmr(args):
 
 def main():
 
-    if (args.t and args.e) or (not args.t and not args.e):
-        print('\nError: Must provide either -t or -e\n')
-        parser.print_help()
-        exit(1)
+    rules = []
+    if args.bmr4 and args.bmr6:
+        rules.append(build_rule(args.bmr4, args.bmr6, args.bmrea, args.bmroff))
+    if args.fmr4 and args.fmr6:
+        rules.append(build_rule(args.fmr4, args.fmr6, args.fmrea, args.fmroff, FMR=True))
+    if args.dmr:
+        rules.append(build_dmr(args))
 
     # Setup outer container type
     if args.t:
         container = format(95, 'x').zfill(4)
     elif args.e:
         container = format(94, 'x').zfill(4)
+    else:
+        container = None
 
-    rules = []
-    if args.dmr:
-        rules.append(build_dmr(args))
-    if args.bmr4 and args.bmr6:
-        rules.append(build_rule(args.bmr4, args.bmr6, args.bmrea, args.bmroff))
-    if args.fmr4 and args.fmr6:
-        rules.append(build_rule(args.fmr4, args.fmr6, args.fmrea, FMR=True))
+    if container is not None:
+        compiled = container + get_length(''.join(rules)) + ''.join(rules)
+    else:
+        compiled = ''.join(rules)
 
-    compiled = container + get_length(''.join(rules)) + ''.join(rules)
     print(compiled)
 
 
