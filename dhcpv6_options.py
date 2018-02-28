@@ -16,7 +16,6 @@ parser.add_argument('-f6', dest='fmr6', metavar='<v6/len>', help='Forward Mappin
 parser.add_argument('-fe', dest='fmrea', metavar='<ea_bits>', help='Forward Mapping Rule EA bits', default=0)
 parser.add_argument('-fo', dest='fmroff', metavar='<psid_offset>', help='Forward Mapping Rule PSID Offset', default=0)
 
-
 args = parser.parse_args()
 
 
@@ -32,17 +31,17 @@ def get_length(field, z=4):
     return str(length)
 
 
-def build_port_opts(offset):
+def build_port_opts(plen, offset):
     # TODO: Build explicit PSID functionality
     psid_id = format(0, 'x').zfill(4)
-    psid_len = format(0, 'x').zfill(2)
+    psid_len = format(int(plen), 'x').zfill(2)
     psid_off = format(int(offset), 'x').zfill(2)
     port_opt = format(93, 'x').zfill(4)
     port_params = port_opt + '0004' + psid_off + psid_len + psid_id
     return(port_params)
 
 
-def build_rule(v4, v6, ea, offset=0, FMR=False):
+def build_rule(v4, v6, ea, offset, FMR=False):
     # Basic Mapping Rule
     rule_cont = format(89, 'x').zfill(4)
     ea_bits = format(int(ea), 'x').zfill(2)
@@ -52,14 +51,16 @@ def build_rule(v4, v6, ea, offset=0, FMR=False):
     else:
         flags = format(1, 'x').zfill(2)
 
-    port_params = build_port_opts(offset)
-
     try:
         v4 = ipaddress.ip_network(v4)
         v6 = ipaddress.ip_network(v6)
     except:
         print('Error: Invalid v4 and/or v6 prefix: %s, %s' % (v4, v6))
         exit(1)
+
+    psid_len = int(ea) - (32 - v4.prefixlen)
+    print(psid_len)
+    port_params = build_port_opts(psid_len, offset)
 
     rule_v4 = ''
     for octet in v4.network_address.exploded.split('.'):
