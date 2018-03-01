@@ -59,7 +59,6 @@ def build_rule(v4, v6, ea, offset, FMR=False):
         exit(1)
 
     psid_len = int(ea) - (32 - v4.prefixlen)
-    print(psid_len)
     port_params = build_port_opts(psid_len, offset)
 
     rule_v4 = ''
