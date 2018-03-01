@@ -51,7 +51,7 @@ def main():
 
     elif v6_length == 40:
         if mapped[2] is not None:
-            mapped[2] = mapped[2][:1] + hex_encode(oct1)
+            mapped[2] = mapped[2][:2] + hex_encode(oct1)
         else:
             mapped[2] = str('00') + hex_encode(oct1)
         mapped[3] = hex_encode(oct2) + hex_encode(oct3)
@@ -64,7 +64,7 @@ def main():
 
     elif v6_length == 56:
         if mapped[3] is not None:
-            mapped[3] = mapped[3][:1] + hex_encode(oct1)
+            mapped[3] = mapped[3][:2] + hex_encode(oct1)
         else:
             mapped[3] = str('00') + hex_encode(oct1)
         mapped[4] = str('00') + hex_encode(oct2)
