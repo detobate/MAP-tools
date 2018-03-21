@@ -31,10 +31,11 @@ def get_length(field, z=4):
     return str(length)
 
 
-def build_port_opts(plen, offset):
+def build_port_opts(offset):
     # TODO: Build explicit PSID functionality
+
     psid_id = format(0, 'x').zfill(4)
-    psid_len = format(int(plen), 'x').zfill(2)
+    psid_len = format(0, 'x').zfill(2)
     psid_off = format(int(offset), 'x').zfill(2)
     port_opt = format(93, 'x').zfill(4)
     port_params = port_opt + '0004' + psid_off + psid_len + psid_id
@@ -58,8 +59,8 @@ def build_rule(v4, v6, ea, offset, FMR=False):
         print('Error: Invalid v4 and/or v6 prefix: %s, %s' % (v4, v6))
         exit(1)
 
-    psid_len = int(ea) - (32 - v4.prefixlen)
-    port_params = build_port_opts(psid_len, offset)
+    #psid_len = int(ea) - (32 - v4.prefixlen)
+    port_params = build_port_opts(offset)
 
     rule_v4 = ''
     for octet in v4.network_address.exploded.split('.'):
@@ -102,6 +103,10 @@ def build_dmr(args):
 
 
 def main():
+
+    if args.dmr is None and args.bmr6 is None and args.fmr6 is None:
+        print(parser.print_help())
+        exit(1)
 
     rules = []
     if args.bmr4 and args.bmr6:
