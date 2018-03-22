@@ -68,8 +68,9 @@ def build_rule(v4, v6, ea, offset, FMR=False):
     rule_v4_len = format(v4.prefixlen, 'x').zfill(2)
 
     rule_v6_len = v6.prefixlen
-    # Get the network address and mask off the prefix size
-    mask = int(rule_v6_len / 4)
+    # Get the network address, mask off the prefix size, rounding up to next nibble
+    mask = int(rule_v6_len / 4) + (rule_v6_len % 4 > 0)
+
     rule_v6 = v6.network_address.exploded
     rule_v6 = ''.join(rule_v6.split(':'))
     rule_v6 = rule_v6[:mask]
