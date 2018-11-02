@@ -74,11 +74,17 @@ def build_rule(v4, v6, ea, offset, FMR=False):
     rule_v6 = v6.network_address.exploded
     rule_v6 = ''.join(rule_v6.split(':'))
     rule_v6 = rule_v6[:mask]
+    # we need to zero pad up to the byte boundary
+    if mask % 8 > 0:
+        padding = 4 - mask % 8
+        rule_v6 = rule_v6 + '0' * padding
+
+
     rule_v6_len = format(v6.prefixlen, 'x').zfill(2)
 
     rule = flags + ea_bits + rule_v4_len + rule_v4 + rule_v6_len + rule_v6 + port_params
     rule = rule_cont + get_length(rule) + rule
-    return(rule)
+    return rule
 
 
 def build_dmr(args):
