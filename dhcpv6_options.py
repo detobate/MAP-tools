@@ -76,9 +76,8 @@ def build_rule(v4, v6, ea, offset, FMR=False):
     rule_v6 = rule_v6[:mask]
     # we need to zero pad up to the byte boundary
     if mask % 8 > 0:
-        padding = 4 - mask % 8
+        padding = int((mask % 8) / 4)
         rule_v6 = rule_v6 + '0' * padding
-
 
     rule_v6_len = format(v6.prefixlen, 'x').zfill(2)
 
