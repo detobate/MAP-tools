@@ -11,3 +11,6 @@ Random tools for working with:
 * [dhcpv6_options.py](https://github.com/detobate/MAP-tools/blob/master/dhcpv6_options.py) -  Generates hex encoded DHCPv6 Options for use with MAP
 * [embed_v4.py](https://github.com/detobate/MAP-tools/blob/master/embed_v4.py) - Generates [IPv4-embedded IPv6 addresses](https://tools.ietf.org/html/rfc6052#section-2.2)
 * [decode_mapt.pcap.py](https://github.com/detobate/MAP-tools/blob/master/decode_mapt_pcap.py) - Decodes packet captures containing MAP-T-translated IPv6 packets
+
+### Prerequisites
+Install the required modules using: `pip3 install -r requirements.txt`
