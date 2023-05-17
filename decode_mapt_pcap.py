@@ -4,8 +4,8 @@ import ipaddress
 import argparse
 
 parser = argparse.ArgumentParser(description='Decode MAP-T (RFC7598) translated pcaps')
-parser.add_argument('-r', dest='pcap_in', metavar='<input.pcap>', help='Input pcap file', required=True)
-parser.add_argument('-w', dest='pcap_out', metavar='<output.pcap>', help='Input pcap file')
+parser.add_argument('-r', dest='pcap_in', metavar='<input.pcap>', help='Read pcap file', required=True)
+parser.add_argument('-w', dest='pcap_out', metavar='<output.pcap>', help='Write pcap file')
 parser.add_argument('-d', dest='dmr', metavar='<v6/len>', help='Default Mapping Rule IPv6 prefix', required=True)
 parser.add_argument('-4', dest='bmr4', metavar='<v4/len>', help='Basic Mapping Rule IPv4 Prefix', required=True)
 parser.add_argument('-6', dest='bmr6', metavar='<v6/len>', help='Basic Mapping Rule IPv6 Prefix', required=True)
