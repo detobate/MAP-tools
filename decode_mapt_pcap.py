@@ -109,16 +109,19 @@ def main():
             # Pop off IPv6 Fragment Headers
             if isinstance(p6.payload, scapy.layers.inet6.IPv6ExtHdrFragment):
                 p4 = p4 / p6.payload.payload
-                p4.len = p4.len - 8
+                p4.len = p6.plen + 20 - 8  # IPv6 payload length + IPv4 header - IPv6 FragHdr
+
                 if p6.payload.m == 1:
                     p4.flags = 'MF'
                 if p6.payload.offset > 0:
                     p4.frag = p6.payload.offset
             else:
                 p4 = p4 / p6.payload
+                # Payload length + IPv4 header
+                # Counterintuitive to be adding length, but the IPv6 plen value doesn't account for IPv6 header, IPv4 does
+                p4.len = p6.plen + 20
 
             p4.tos = p6.tc          # TC -> ToS
-            p4.len = p6.plen + 20   # Payload length + IPv4 header
             p4.ttl = p6.hlim        # Hop Limit -> TTL
 
             # Next Header / Protocol Parsing
