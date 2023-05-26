@@ -109,6 +109,7 @@ def main():
             # Pop off IPv6 Fragment Headers
             if isinstance(p6.payload, scapy.layers.inet6.IPv6ExtHdrFragment):
                 p4 = p4 / p6.payload.payload
+                p4.len = p4.len - 8
                 if p6.payload.m == 1:
                     p4.flags = 'MF'
                 if p6.payload.offset > 0:
