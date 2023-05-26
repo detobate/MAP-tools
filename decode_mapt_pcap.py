@@ -115,70 +115,71 @@ def main():
                     p4.frag = p6.payload.offset
             else:
                 p4 = p4 / p6.payload
-                p4.tos = p6.tc          # TC -> ToS
-                p4.len = p6.plen + 20   # Payload length + IPv4 header
-                p4.ttl = p6.hlim        # Hop Limit -> TTL
 
-                # Next Header / Protocol Parsing
-                # Scapy will auto-populate the IPv4 protocol field when appending payload,
-                # but some protocols require special treatment as specified in RFC7915
+            p4.tos = p6.tc          # TC -> ToS
+            p4.len = p6.plen + 20   # Payload length + IPv4 header
+            p4.ttl = p6.hlim        # Hop Limit -> TTL
 
-                # ICMPv6 -> ICMPv4
-                if p6.nh == 58:
-                    p4.proto = 'icmp'
+            # Next Header / Protocol Parsing
+            # Scapy will auto-populate the IPv4 protocol field when appending payload,
+            # but some protocols require special treatment as specified in RFC7915
 
-                    # ICMPv6 Type and Code translation.
+            # ICMPv6 -> ICMPv4
+            if p6.nh == 58:
+                p4.proto = 'icmp'
 
-                    # Dest Unreachable
-                    if p6.payload.type == 1:
-                        p4.payload.type = 3
-                        # No Route to Dest -> Host Unreachable
-                        if p6.payload.code == 0:
-                            p4.payload.code = 1
-                        elif p6.payload.code == 1:
-                            p4.payload.code = 10
-                        # Beyond Scope -> Host Unreachable
-                        elif p6.payload.code == 2:
-                            p4.payload.code = 1
-                        # Address Unreachable -> Host Unreachable
-                        elif p6.payload.code == 3:
-                            p4.payload.code = 1
-                        # Port Unreachable -> Port Unreachable
-                        elif p6.payload.code == 4:
-                            p4.payload.code = 3
-                        else:
-                            print(f'Warn: Unknown ICMPv6 Destination Unreachable Code: {p6.payload.code}')
+                # ICMPv6 Type and Code translation.
 
-                    # Packet Too Big > Destination Unreachable
-                    elif p6.payload.type == 2:
-                        p4.payload.type = 3
-                        p4.payload.code = 4
+                # Dest Unreachable
+                if p6.payload.type == 1:
+                    p4.payload.type = 3
+                    # No Route to Dest -> Host Unreachable
+                    if p6.payload.code == 0:
+                        p4.payload.code = 1
+                    elif p6.payload.code == 1:
+                        p4.payload.code = 10
+                    # Beyond Scope -> Host Unreachable
+                    elif p6.payload.code == 2:
+                        p4.payload.code = 1
+                    # Address Unreachable -> Host Unreachable
+                    elif p6.payload.code == 3:
+                        p4.payload.code = 1
+                    # Port Unreachable -> Port Unreachable
+                    elif p6.payload.code == 4:
+                        p4.payload.code = 3
+                    else:
+                        print(f'Warn: Unknown ICMPv6 Destination Unreachable Code: {p6.payload.code}')
+
+                # Packet Too Big > Destination Unreachable
+                elif p6.payload.type == 2:
+                    p4.payload.type = 3
+                    p4.payload.code = 4
+                    # TODO:
+                    # adjust the ICMPv4
+                    #          checksum both to take the type change into account and to
+                    #          exclude the ICMPv6 pseudo-header.  The MTU field MUST be
+                    #          adjusted for the difference between the IPv4 and IPv6 header
+                    #          sizes, taking into account whether or not the packet in error
+                    #          includes a Fragment Header, i.e., minimum((MTU value in the
+                    #          Packet Too Big Message)-20, MTU_of_IPv4_nexthop,
+                    #          (MTU_of_IPv6_nexthop)-20).
+
+                # Time Exceeded
+                elif p6.payload.type == 3:
+                    p4.payload.type = 11
+                # Parameter Problem
+                elif p6.payload.type == 4:
+                    if p6.payload.code == 0:
+                        p4.payload.type = 12
+                        p4.payload.code = 0
                         # TODO:
-                        # adjust the ICMPv4
-                        #          checksum both to take the type change into account and to
-                        #          exclude the ICMPv6 pseudo-header.  The MTU field MUST be
-                        #          adjusted for the difference between the IPv4 and IPv6 header
-                        #          sizes, taking into account whether or not the packet in error
-                        #          includes a Fragment Header, i.e., minimum((MTU value in the
-                        #          Packet Too Big Message)-20, MTU_of_IPv4_nexthop,
-                        #          (MTU_of_IPv6_nexthop)-20).
-
-                    # Time Exceeded
-                    elif p6.payload.type == 3:
-                        p4.payload.type = 11
-                    # Parameter Problem
-                    elif p6.payload.type == 4:
-                        if p6.payload.code == 0:
-                            p4.payload.type = 12
-                            p4.payload.code = 0
-                            # TODO:
-                            # update the pointer as defined in Figure 6.  (If
-                            #             the Original IPv6 Pointer Value is not listed or the
-                            #             Translated IPv4 Pointer Value is listed as "n/a", silently
-                            #             drop the packet.)
-                        if p6.payload.code == 1:
-                            p4.payload.type = 3
-                            p4.payload.code = 2
+                        # update the pointer as defined in Figure 6.  (If
+                        #             the Original IPv6 Pointer Value is not listed or the
+                        #             Translated IPv4 Pointer Value is listed as "n/a", silently
+                        #             drop the packet.)
+                    if p6.payload.code == 1:
+                        p4.payload.type = 3
+                        p4.payload.code = 2
 
             pkt_out = pkt
             pkt_out[payload_idx] = p4
